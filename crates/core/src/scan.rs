@@ -49,16 +49,21 @@ impl ScanReport {
     }
 }
 
-/// Verify every esp the manifest tracks against a Data directory.
+/// Verify every file the manifest tracks against a Data directory.
+///
+/// Two entry shapes live in the collection-lock `files:` map:
+/// - plugin basenames (`3BBB.esp`) — searched anywhere under Data
+/// - Data-relative paths (`interface/racemenu/bottombar.swf`) — checked in place
 pub fn scan_install(data_dir: &Path, manifest: &Manifest) -> std::io::Result<ScanReport> {
-    // Index esp files by lowercase name (Wine/NTFS semantics: case-insensitive).
+    // Index plugin files by lowercase basename (Wine/NTFS semantics: case-insensitive).
     let mut index: std::collections::HashMap<String, PathBuf> = Default::default();
     for entry in WalkDir::new(data_dir).into_iter().filter_map(Result::ok) {
         if entry.file_type().is_file() {
             if let Some(name) = entry.file_name().to_str() {
-                if name.to_ascii_lowercase().ends_with(".esp") {
+                let lower = name.to_ascii_lowercase();
+                if lower.ends_with(".esp") || lower.ends_with(".esm") || lower.ends_with(".esl") {
                     index
-                        .entry(name.to_ascii_lowercase())
+                        .entry(lower)
                         .or_insert_with(|| entry.path().to_path_buf());
                 }
             }
@@ -70,18 +75,30 @@ pub fn scan_install(data_dir: &Path, manifest: &Manifest) -> std::io::Result<Sca
     let mut failed = 0usize;
 
     for (esp, pin) in &manifest.files {
-        let found = index.get(&esp.to_ascii_lowercase());
+        // Data-relative entries (contain a path separator) check in place;
+        // bare plugin names resolve via the walk index.
+        let is_relative_path = esp.contains('/') || esp.contains('\\');
+        let found = if is_relative_path {
+            let p = data_dir.join(esp.replace('/', std::path::MAIN_SEPARATOR_STR));
+            if p.is_file() {
+                Some(p)
+            } else {
+                find_case_insensitive_path(data_dir, esp)
+            }
+        } else {
+            index.get(&esp.to_ascii_lowercase()).cloned()
+        };
         let (verdict, path) = match found {
             None => (FileVerdict::Missing, None),
             Some(p) => {
-                let meta = std::fs::metadata(p)?;
+                let meta = std::fs::metadata(&p)?;
                 let verdict = if meta.len() != pin.size {
                     FileVerdict::SizeMismatch {
                         expected: pin.size,
                         actual: meta.len(),
                     }
                 } else {
-                    let actual = sha256_file(p).map_err(std::io::Error::other)?;
+                    let actual = sha256_file(&p).map_err(std::io::Error::other)?;
                     if actual == pin.sha256 {
                         FileVerdict::Ok
                     } else {
@@ -92,7 +109,7 @@ pub fn scan_install(data_dir: &Path, manifest: &Manifest) -> std::io::Result<Sca
                         }
                     }
                 };
-                (verdict, Some(p.clone()))
+                (verdict, Some(p))
             }
         };
         if matches!(verdict, FileVerdict::Ok) {
@@ -121,4 +138,30 @@ pub fn scan_install(data_dir: &Path, manifest: &Manifest) -> std::io::Result<Sca
         ok,
         failed,
     })
+}
+
+/// Resolve a Data-relative path case-insensitively, component by component
+/// (Wine/NTFS semantics on a case-sensitive Linux fs).
+fn find_case_insensitive_path(data_dir: &Path, rel: &str) -> Option<PathBuf> {
+    let mut cur = data_dir.to_path_buf();
+    for part in rel.split(['/', '\\']) {
+        let direct = cur.join(part);
+        if direct.exists() {
+            cur = direct;
+            continue;
+        }
+        let want = part.to_ascii_lowercase();
+        let next = std::fs::read_dir(&cur).ok()?.flatten().find(|e| {
+            e.file_name()
+                .to_str()
+                .map(|n| n.to_ascii_lowercase() == want)
+                .unwrap_or(false)
+        });
+        cur = next?.path();
+    }
+    if cur.is_file() {
+        Some(cur)
+    } else {
+        None
+    }
 }

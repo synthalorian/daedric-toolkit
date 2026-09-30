@@ -5,9 +5,17 @@
 //! `app.asar` — required mod list, canonical archive checksums, and a per-file sha256 map.
 //! This crate decodes that contract and checks a real install against it.
 
+pub mod asar;
+pub mod collection;
+mod de;
+pub mod extract;
 pub mod hash;
 pub mod manifest;
 pub mod scan;
+pub mod verify;
 
+pub use asar::Asar;
+pub use collection::{BuildManifest, CollectionLock, DllAllowlist};
 pub use manifest::Manifest;
 pub use scan::{scan_install, FileVerdict, ScanReport};
+pub use verify::{scan_build_gate, verify_downloads, BuildGateReport, DownloadsReport};
