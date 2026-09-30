@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daedric Toolkit — Install Doctor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <h1>DAEDRIC TOOLKIT</h1>
+    <p class="subtitle">install doctor</p>
+  </header>
+
+  <main>
+    <section class="card setup-card">
+      <h2>Setup</h2>
+      <div class="field">
+        <label for="asar-path">Launcher app.asar</label>
+        <input
+          id="asar-path"
+          type="text"
+          spellcheck="false"
+          value="/home/synth/Games/umu/umu-489830/drive_c/Program Files/DaedricOnline/resources/app.asar"
+        />
+      </div>
+      <div class="field">
+        <label for="skyrim-root">Skyrim SE root</label>
+        <input
+          id="skyrim-root"
+          type="text"
+          spellcheck="false"
+          value="/home/synth/.local/share/Steam/steamapps/common/Skyrim Special Edition"
+        />
+      </div>
+      <button id="run-doctor" class="btn btn-primary">RUN FULL DOCTOR</button>
+      <p id="status-line" class="status-line"></p>
+    </section>
+
+    <section id="contract-strip" class="contract-strip hidden">
+      <div class="contract-item"><span class="contract-num" id="c-mods">0</span><span class="contract-label">mods</span></div>
+      <div class="contract-item"><span class="contract-num" id="c-pins">0</span><span class="contract-label">file pins</span></div>
+      <div class="contract-item"><span class="contract-num" id="c-plugins">0</span><span class="contract-label">plugins</span></div>
+      <div class="contract-item"><span class="contract-num" id="c-dlls">0</span><span class="contract-label">dlls</span></div>
+      <div class="contract-meta">
+        <div><span class="meta-key">collection</span> <span id="c-slug">—</span> <span class="meta-key">rev</span> <span id="c-rev">—</span></div>
+        <div class="mono"><span class="meta-key">file-set</span> <span id="c-fileset">—</span></div>
+      </div>
+    </section>
+
+    <section class="panels">
+      <div class="card panel" id="panel-esp">
+        <div class="panel-head">
+          <h2>Plugin Gate</h2>
+          <span class="badge badge-idle" id="badge-esp">IDLE</span>
+        </div>
+        <p class="panel-sub">collection-lock esp pins vs <span class="mono">Data/</span></p>
+        <div class="counts"><span class="count-ok" id="ok-esp">0 ok</span> / <span class="count-fail" id="fail-esp">0 failed</span></div>
+        <button class="btn btn-small" id="scan-esp">Scan plugin gate</button>
+        <ul class="fail-list" id="list-esp"></ul>
+      </div>
+
+      <div class="card panel" id="panel-gate">
+        <div class="panel-head">
+          <h2>Build Gate</h2>
+          <span class="badge badge-idle" id="badge-gate">IDLE</span>
+        </div>
+        <p class="panel-sub">play-gate: plugins + loose files + SKSE dlls</p>
+        <div class="counts"><span class="count-ok" id="ok-gate">0 ok</span> / <span class="count-fail" id="fail-gate">0 failed</span></div>
+        <button class="btn btn-small" id="scan-gate">Scan build gate</button>
+        <ul class="fail-list" id="list-gate"></ul>
+      </div>
+
+      <div class="card panel" id="panel-dl">
+        <div class="panel-head">
+          <h2>Downloads</h2>
+          <span class="badge badge-idle" id="badge-dl">IDLE</span>
+        </div>
+        <p class="panel-sub">archive md5/size pins vs <span class="mono">DaedricData/downloads</span></p>
+        <div class="counts"><span class="count-ok" id="ok-dl">0 ok</span> / <span class="count-fail" id="fail-dl">0 failed</span></div>
+        <button class="btn btn-small" id="scan-dl">Verify downloads</button>
+        <ul class="fail-list" id="list-dl"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">Made by synth with blackclaw</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
