@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1E1E26"/>
+      <stop offset="1" stop-color="#101014"/>
+    </linearGradient>
+    <linearGradient id="steelBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D8D3C8"/>
+      <stop offset="0.55" stop-color="#8F959C"/>
+      <stop offset="1" stop-color="#5C6167"/>
+    </linearGradient>
+    <linearGradient id="bloodBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E5383B"/>
+      <stop offset="0.6" stop-color="#C1121F"/>
+      <stop offset="1" stop-color="#4A0B10"/>
+    </linearGradient>
+    <radialGradient id="emberGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#C1121F" stop-opacity="0.32"/>
+      <stop offset="0.55" stop-color="#C1121F" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#C1121F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- tile -->
+  <rect x="26" y="26" width="460" height="460" rx="96" fill="url(#tile)" stroke="#2A2A31" stroke-width="4"/>
+
+  <!-- ember glow centered on the gate -->
+  <ellipse cx="256" cy="256" rx="190" ry="170" fill="url(#emberGlow)"/>
+
+  <!-- lattice rails behind the bars -->
+  <rect x="112" y="176" width="288" height="24" rx="6" fill="#454A50"/>
+  <rect x="112" y="252" width="288" height="24" rx="6" fill="#454A50"/>
+  <rect x="112" y="328" width="288" height="24" rx="6" fill="#454A50"/>
+
+  <!-- portcullis: vertical bars with pointed (hanging spike) bottoms -->
+  <g>
+    <path d="M136 128 h36 v218 l-18 34 l-18 -34 Z" fill="url(#steelBar)"/>
+    <path d="M196 128 h36 v218 l-18 34 l-18 -34 Z" fill="url(#steelBar)"/>
+    <path d="M256 128 h36 v218 l-18 34 l-18 -34 Z" fill="url(#steelBar)"/>
+    <path d="M316 128 h36 v218 l-18 34 l-18 -34 Z" fill="url(#steelBar)"/>
+    <path d="M376 128 h36 v218 l-18 34 l-18 -34 Z" fill="url(#steelBar)"/>
+  </g>
+
+  <!-- center blood bar, drawn last, slightly longer spike -->
+  <path d="M238 118 h36 v252 l-18 40 l-18 -40 Z" fill="url(#bloodBar)"/>
+</svg>
