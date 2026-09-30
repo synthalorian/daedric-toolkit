@@ -17,6 +17,16 @@
   var runBtn = $("run-doctor");
   var statusLine = $("status-line");
 
+  function rememberPath(input, key) {
+    var saved = localStorage.getItem(key);
+    if (saved) input.value = saved;
+    input.addEventListener("change", function () {
+      localStorage.setItem(key, input.value.trim());
+    });
+  }
+  rememberPath(asarInput, "daedric-asar");
+  rememberPath(rootInput, "daedric-skyrim-root");
+
   function dataDir() {
     return rootInput.value.replace(/\/+$/, "") + "/Data";
   }

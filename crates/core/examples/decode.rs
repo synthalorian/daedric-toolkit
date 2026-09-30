@@ -4,11 +4,12 @@ use std::path::PathBuf;
 fn main() {
     let asar = std::env::args()
         .nth(1)
+        .or_else(|| std::env::var("DAEDRIC_ASAR").ok())
+        .filter(|s| !s.trim().is_empty())
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            PathBuf::from(
-                "/home/synth/Games/umu/umu-489830/drive_c/Program Files/DaedricOnline/resources/app.asar",
-            )
+            eprintln!("usage: decode [asar_path]  (or set DAEDRIC_ASAR)");
+            std::process::exit(2);
         });
 
     println!("== asar directory ==");

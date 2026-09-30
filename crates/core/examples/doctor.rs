@@ -1,7 +1,7 @@
 //! Full install-doctor run against a live Skyrim SE + Daedric Online install.
 //!
 //! usage: doctor [asar_path] [skyrim_root]
-//! defaults: synth's field machine.
+//! or set DAEDRIC_ASAR and DAEDRIC_SKYRIM.
 
 use daedric_core::{
     scan_build_gate, scan_install, verify_downloads, BuildManifest, CollectionLock, DllAllowlist,
@@ -10,18 +10,29 @@ use daedric_core::{
 use std::path::PathBuf;
 use std::time::Instant;
 
-fn main() {
-    let asar = std::env::args().nth(1).map(PathBuf::from).unwrap_or_else(|| {
-        PathBuf::from(
-            "/home/synth/Games/umu/umu-489830/drive_c/Program Files/DaedricOnline/resources/app.asar",
-        )
-    });
-    let root = std::env::args()
-        .nth(2)
+fn path_arg(nth: usize, env_key: &str, usage: &str) -> PathBuf {
+    std::env::args()
+        .nth(nth)
+        .or_else(|| std::env::var(env_key).ok())
+        .filter(|s| !s.trim().is_empty())
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            PathBuf::from("/home/synth/.local/share/Steam/steamapps/common/Skyrim Special Edition")
-        });
+            eprintln!("{usage}");
+            std::process::exit(2);
+        })
+}
+
+fn main() {
+    let asar = path_arg(
+        1,
+        "DAEDRIC_ASAR",
+        "usage: doctor [asar_path] [skyrim_root]  (or DAEDRIC_ASAR / DAEDRIC_SKYRIM)",
+    );
+    let root = path_arg(
+        2,
+        "DAEDRIC_SKYRIM",
+        "usage: doctor [asar_path] [skyrim_root]  (or DAEDRIC_ASAR / DAEDRIC_SKYRIM)",
+    );
     let data = root.join("Data");
 
     println!("== decode contracts ==");
