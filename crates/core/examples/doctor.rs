@@ -40,6 +40,24 @@ fn main() {
         dlls.dlls.len()
     );
 
+    println!("\n== overlay drift ==");
+    let overlay = daedric_core::check_overlay(&root, &dlls);
+    println!(
+        "  installed: {} ({}marker) | accepted: [{}] | verdict: {:?}{}",
+        overlay.installed.as_deref().unwrap_or("none"),
+        if overlay.legacy_marker { "legacy " } else { "" },
+        overlay.accepted.join(", "),
+        overlay.verdict,
+        if overlay.behind_latest {
+            " — BEHIND latest, launcher will push an update at next Play"
+        } else {
+            ""
+        }
+    );
+    if matches!(overlay.verdict, daedric_core::OverlayVerdict::Drift) {
+        println!("  note: gate failures below are version drift, not corruption.");
+    }
+
     println!("\n== esp gate (collection-lock files:) ==");
     let t = Instant::now();
     let report = scan_install(&data, &manifest).expect("esp scan");

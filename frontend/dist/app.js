@@ -161,6 +161,37 @@
       : "—";
   }
 
+  // Overlay verdict arrives as a unit-variant string ("Current", "Drift", …).
+  function renderOverlay(o) {
+    $("overlay-banner").classList.remove("hidden");
+    var badge = $("overlay-badge");
+    var note = "";
+    if (o.verdict === "Current") {
+      badge.className = "badge badge-pass";
+      badge.textContent = "CURRENT";
+      note = "install matches the contract's accepted overlay set.";
+    } else if (o.verdict === "Drift") {
+      badge.className = "badge badge-drift";
+      badge.textContent = "DRIFT";
+      note =
+        "installed overlay is outside the accepted set — gate failures below " +
+        "are version skew, not corruption. The launcher will push an update at next Play.";
+    } else if (o.verdict === "NotInstalled") {
+      badge.className = "badge badge-idle";
+      badge.textContent = "NO OVERLAY";
+      note = "no overlay marker found — fresh install or overlay never applied.";
+    } else {
+      badge.className = "badge badge-idle";
+      badge.textContent = "UNKNOWN";
+      note = "contract carries no accepted overlay set — nothing to compare against.";
+    }
+    $("overlay-installed").textContent =
+      (o.installed || "—") + (o.legacy_marker ? " (legacy marker)" : "");
+    $("overlay-accepted").textContent =
+      o.accepted && o.accepted.length ? o.accepted.join(", ") : "—";
+    $("overlay-note").textContent = note;
+  }
+
   function panelError(prefix, err) {
     setBadge("badge-" + prefix, "fail");
     var list = $("list-" + prefix);
@@ -195,16 +226,21 @@
     })
       .then(function (report) {
         renderContracts(report.contracts);
+        renderOverlay(report.overlay);
         renderEsp(report.esp);
         renderGate(report.gate);
         renderDownloads(report.downloads);
+        var driftNote =
+          report.overlay.verdict === "Drift"
+            ? " (overlay drift — failures are version skew)"
+            : "";
         var totalFail =
           report.esp.failed + report.gate.failed + report.downloads.failed;
         setStatus(
           totalFail === 0
-            ? "the gate holds. every contract passes."
-            : totalFail + " failure(s) across the three gates.",
-          totalFail !== 0
+            ? "the gate holds. every contract passes." + driftNote
+            : totalFail + " failure(s) across the three gates." + driftNote,
+          totalFail !== 0 && report.overlay.verdict !== "Drift"
         );
       })
       .catch(function (err) {
@@ -256,5 +292,13 @@
     .then(renderContracts)
     .catch(function () {
       /* asar may not exist on this machine — stay quiet, strip stays hidden */
+    });
+  invoke("check_overlay_drift", {
+    skyrimRoot: rootInput.value,
+    asarPath: asarInput.value,
+  })
+    .then(renderOverlay)
+    .catch(function () {
+      /* same — no local install, no banner */
     });
 })();

@@ -11,11 +11,13 @@ mod de;
 pub mod extract;
 pub mod hash;
 pub mod manifest;
+pub mod overlay;
 pub mod scan;
 pub mod verify;
 
 pub use asar::Asar;
 pub use collection::{BuildManifest, CollectionLock, DllAllowlist};
 pub use manifest::Manifest;
+pub use overlay::{check_overlay, read_installed_overlay, OverlayReport, OverlayVerdict};
 pub use scan::{scan_install, FileVerdict, ScanReport};
 pub use verify::{scan_build_gate, verify_downloads, BuildGateReport, DownloadsReport};

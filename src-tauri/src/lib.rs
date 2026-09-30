@@ -1,6 +1,6 @@
 use daedric_core::{
     BuildGateReport, BuildManifest, CollectionLock, DllAllowlist, DownloadsReport, Manifest,
-    ScanReport,
+    OverlayReport, ScanReport,
 };
 use serde::Serialize;
 use std::path::PathBuf;
@@ -82,6 +82,18 @@ fn verify_downloads(skyrim_root: String, asar_path: String) -> Result<DownloadsR
     daedric_core::verify_downloads(&downloads, &lock).map_err(|e| e.to_string())
 }
 
+/// Overlay drift check: installed overlay marker vs the contract's accepted set.
+/// Drift means "the launcher will push an update at next Play" — gate failures
+/// on a drifting install are version skew, not corruption.
+#[tauri::command]
+fn check_overlay_drift(skyrim_root: String, asar_path: String) -> Result<OverlayReport, String> {
+    let dlls = DllAllowlist::from_asar(&PathBuf::from(asar_path)).map_err(|e| e.to_string())?;
+    Ok(daedric_core::check_overlay(
+        &PathBuf::from(skyrim_root),
+        &dlls,
+    ))
+}
+
 /// Everything the doctor reports in one run.
 #[derive(Debug, Clone, Serialize)]
 pub struct FullDoctorReport {
@@ -89,6 +101,7 @@ pub struct FullDoctorReport {
     pub gate: BuildGateReport,
     pub downloads: DownloadsReport,
     pub contracts: ContractSummary,
+    pub overlay: OverlayReport,
 }
 
 /// Full install-doctor sweep: decode contracts, scan the esp gate, the
@@ -104,6 +117,7 @@ fn run_full_doctor(skyrim_root: String, asar_path: String) -> Result<FullDoctorR
     let dlls = DllAllowlist::from_asar(&asar).map_err(|e| e.to_string())?;
 
     let contracts = summarize(&lock, &build, &dlls);
+    let overlay = daedric_core::check_overlay(&root, &dlls);
 
     let manifest = Manifest {
         files: lock.files.clone(),
@@ -119,6 +133,7 @@ fn run_full_doctor(skyrim_root: String, asar_path: String) -> Result<FullDoctorR
         gate,
         downloads,
         contracts,
+        overlay,
     })
 }
 
@@ -132,6 +147,7 @@ pub fn run() {
             scan_esp_gate,
             scan_build_gate,
             verify_downloads,
+            check_overlay_drift,
             run_full_doctor,
         ])
         .run(tauri::generate_context!())

@@ -191,6 +191,38 @@ main {
   border-radius: 4px;
 }
 
+/* overlay drift banner */
+.overlay-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 0 0 18px 0;
+  padding: 12px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--steel-dark);
+  border-left: 3px solid var(--steel);
+  border-radius: 4px;
+}
+
+.overlay-detail {
+  font-size: 13px;
+  color: var(--bone);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overlay-note {
+  color: var(--steel);
+  max-width: 70ch;
+}
+
+.badge-drift {
+  color: #f0d9a8;
+  background: rgba(193, 18, 31, 0.14);
+  border-color: #b8860b;
+}
+
 .contract-item {
   display: flex;
   flex-direction: column;
