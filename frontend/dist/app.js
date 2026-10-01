@@ -158,6 +158,125 @@
     );
   }
 
+  function fillList(id, rows, emptyText) {
+    var list = $(id);
+    list.textContent = "";
+    if (!rows.length) {
+      var li = document.createElement("li");
+      li.className = "empty-note";
+      li.textContent = emptyText;
+      list.appendChild(li);
+      return;
+    }
+    rows.forEach(function (row) {
+      var li = document.createElement("li");
+      var head = document.createElement("div");
+      var name = document.createElement("span");
+      name.className = "fail-name";
+      name.textContent = row.name;
+      head.appendChild(name);
+      if (row.kind) {
+        var k = document.createElement("span");
+        k.className = "fail-kind";
+        k.textContent = "[" + row.kind + "]";
+        head.appendChild(k);
+      }
+      if (row.verdict) {
+        var vn = document.createElement("span");
+        vn.className = "fail-verdict";
+        vn.textContent = row.verdict;
+        head.appendChild(vn);
+      }
+      li.appendChild(head);
+      if (row.detail) {
+        var d = document.createElement("div");
+        d.className = "fail-detail";
+        d.textContent = row.detail;
+        li.appendChild(d);
+      }
+      list.appendChild(li);
+    });
+  }
+
+  function renderQuarantine(report) {
+    $("ok-quar").textContent = report.foreign + " foreign";
+    $("fail-quar").textContent = report.contract_hits + " contract hits";
+    if (!report.found) setBadge("badge-quar", "idle");
+    else setBadge("badge-quar", report.failed === 0 ? "pass" : "fail");
+    var rows = [];
+    (report.batches || []).forEach(function (batch) {
+      (batch.files || []).forEach(function (file) {
+        rows.push({
+          name: file.name,
+          kind: batch.at,
+          verdict: file.in_contract ? "CONTRACT" : "FOREIGN",
+          detail: file.from && file.from !== file.name ? file.from : "",
+        });
+      });
+    });
+    fillList("list-quar", rows, report.note || "nothing quarantined");
+  }
+
+  function renderLoad(report) {
+    $("ok-load").textContent = report.contract_ok + " contract ok";
+    $("fail-load").textContent = report.failed + " problems";
+    if (!report.found) setBadge("badge-load", "idle");
+    else setBadge("badge-load", report.failed === 0 ? "pass" : "fail");
+    fillList(
+      "list-load",
+      (report.issues || []).map(function (issue) {
+        return { name: issue.name, kind: issue.kind, verdict: "", detail: "" };
+      }),
+      report.note || "no load-order problems"
+    );
+  }
+
+  function renderIssues(prefix, report, okText) {
+    $( "ok-" + prefix ).textContent = okText;
+    $( "fail-" + prefix ).textContent = report.failed + " problems";
+    setBadge("badge-" + prefix, report.failed === 0 ? "pass" : "fail");
+    fillList(
+      "list-" + prefix,
+      (report.issues || []).map(function (issue) {
+        return { name: issue.detail, kind: issue.kind, verdict: "", detail: "" };
+      }),
+      report.note || "clear"
+    );
+  }
+
+  function renderRuntime(report) {
+    renderIssues("rt", report, report.installed || report.verdict || "—");
+  }
+
+  function renderRelease(report) {
+    var label = report.servers && report.servers.length ? report.servers.join(", ") : report.verdict;
+    renderIssues("rel", report, label || "—");
+  }
+
+  function renderElsewhere(report) {
+    renderIssues("else", report, report.disabled ? "parked" : "enabled");
+  }
+
+  function renderLedger(report) {
+    $("ok-ledger").textContent = report.recorded + " recorded";
+    $("fail-ledger").textContent = report.named + " named";
+    setBadge("badge-ledger", report.found ? "pass" : "idle");
+    fillList(
+      "list-ledger",
+      (report.mods || []).map(function (mod) {
+        var bits = [mod.file_count + " files"];
+        if (mod.plugin_count) bits.push(mod.plugin_count + " plugins");
+        return {
+          name: mod.name || ("mod " + mod.mod_id),
+          kind: mod.mod_id,
+          verdict: "",
+          detail: bits.join(" · "),
+        };
+      }),
+      report.note || "no ledger"
+    );
+  }
+
   function renderContracts(c) {
     $("contract-strip").classList.remove("hidden");
     $("c-mods").textContent = c.mods;
@@ -219,7 +338,7 @@
 
   function setBusy(busy) {
     runBtn.disabled = busy;
-    ["scan-esp", "scan-gate", "scan-dl"].forEach(function (id) {
+    ["scan-esp", "scan-gate", "scan-dl", "scan-quar", "scan-load", "scan-ledger", "scan-rt", "scan-rel", "scan-else"].forEach(function (id) {
       $(id).disabled = busy;
     });
     runBtn.textContent = busy ? "CONSULTING THE GATE…" : "RUN FULL DOCTOR";
@@ -240,16 +359,29 @@
         renderEsp(report.esp);
         renderGate(report.gate);
         renderDownloads(report.downloads);
+        renderQuarantine(report.quarantine);
+        renderLoad(report.load_order);
+        renderLedger(report.ledger);
+        renderRuntime(report.runtime);
+        renderRelease(report.release);
+        renderElsewhere(report.elsewhere);
         var driftNote =
           report.overlay.verdict === "Drift"
             ? " (overlay drift — failures are version skew)"
             : "";
         var totalFail =
-          report.esp.failed + report.gate.failed + report.downloads.failed;
+          report.esp.failed +
+          report.gate.failed +
+          report.downloads.failed +
+          (report.quarantine ? report.quarantine.failed : 0) +
+          (report.load_order ? report.load_order.failed : 0) +
+          (report.runtime ? report.runtime.failed : 0) +
+          (report.release ? report.release.failed : 0) +
+          (report.elsewhere ? report.elsewhere.failed : 0);
         setStatus(
           totalFail === 0
             ? "the gate holds. every contract passes." + driftNote
-            : totalFail + " failure(s) across the three gates." + driftNote,
+            : totalFail + " failure(s)." + driftNote,
           totalFail !== 0 && report.overlay.verdict !== "Drift"
         );
       })
@@ -295,6 +427,46 @@
       skyrimRoot: rootInput.value,
       asarPath: asarInput.value,
     }, renderDownloads);
+  });
+
+  $("scan-quar").addEventListener("click", function () {
+    runSingle("scan-quar", "quar", "read_quarantine", {
+      skyrimRoot: rootInput.value,
+      asarPath: asarInput.value,
+    }, renderQuarantine);
+  });
+
+  $("scan-load").addEventListener("click", function () {
+    runSingle("scan-load", "load", "read_load_order", {
+      skyrimRoot: rootInput.value,
+      asarPath: asarInput.value,
+    }, renderLoad);
+  });
+
+  $("scan-ledger").addEventListener("click", function () {
+    runSingle("scan-ledger", "ledger", "read_install_ledger", {
+      skyrimRoot: rootInput.value,
+      asarPath: asarInput.value,
+    }, renderLedger);
+  });
+
+  $("scan-rt").addEventListener("click", function () {
+    runSingle("scan-rt", "rt", "read_runtime", {
+      skyrimRoot: rootInput.value,
+      asarPath: asarInput.value,
+    }, renderRuntime);
+  });
+
+  $("scan-rel").addEventListener("click", function () {
+    runSingle("scan-rel", "rel", "read_release_book", {
+      skyrimRoot: rootInput.value,
+    }, renderRelease);
+  });
+
+  $("scan-else").addEventListener("click", function () {
+    runSingle("scan-else", "else", "read_play_elsewhere", {
+      skyrimRoot: rootInput.value,
+    }, renderElsewhere);
   });
 
   // Decode the contract strip on load so the UI opens with context.

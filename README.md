@@ -1,6 +1,6 @@
 # Daedric Toolkit
 
-Install doctor for [Daedric Online](https://daedriconline.com). It reads the launcher's `app.asar` contract and checks a Skyrim Special Edition install against it: plugin hashes, loose-file pins, SKSE DLL allowlist, archive checksums, and overlay-version drift.
+Install doctor for [Daedric Online](https://daedriconline.com). It reads the launcher's `app.asar` contract and checks a Skyrim Special Edition install against it: plugin hashes, loose-file pins, SKSE DLL allowlist, archive checksums, overlay-version drift, quarantined plugins, the Plugins.txt load order, the launcher's install ledger, the SkyrimSE.exe build, the release book, and the play-elsewhere toggle.
 
 A failing gate is often version drift, not a corrupt file. If the installed overlay is older than the contract, the doctor says so instead of calling the files broken.
 

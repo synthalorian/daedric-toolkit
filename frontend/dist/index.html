@@ -90,6 +90,72 @@
         <button class="btn btn-small" id="scan-dl">Verify downloads</button>
         <ul class="fail-list" id="list-dl"></ul>
       </div>
+
+      <div class="card panel" id="panel-quar">
+        <div class="panel-head">
+          <h2>Quarantine</h2>
+          <span class="badge badge-idle" id="badge-quar">IDLE</span>
+        </div>
+        <p class="panel-sub">foreign plugins the launcher pulled out of <span class="mono">Data/</span></p>
+        <div class="counts"><span class="count-ok" id="ok-quar">0 foreign</span> / <span class="count-fail" id="fail-quar">0 contract hits</span></div>
+        <button class="btn btn-small" id="scan-quar">Read quarantine</button>
+        <ul class="fail-list" id="list-quar"></ul>
+      </div>
+
+      <div class="card panel" id="panel-load">
+        <div class="panel-head">
+          <h2>Load Order</h2>
+          <span class="badge badge-idle" id="badge-load">IDLE</span>
+        </div>
+        <p class="panel-sub">Plugins.txt vs the launcher plugin-order. Engine masters are not listed.</p>
+        <div class="counts"><span class="count-ok" id="ok-load">0 enabled</span> / <span class="count-fail" id="fail-load">0 problems</span></div>
+        <button class="btn btn-small" id="scan-load">Read load order</button>
+        <ul class="fail-list" id="list-load"></ul>
+      </div>
+
+      <div class="card panel" id="panel-ledger">
+        <div class="panel-head">
+          <h2>Install Ledger</h2>
+          <span class="badge badge-idle" id="badge-ledger">IDLE</span>
+        </div>
+        <p class="panel-sub">launcher install record — not the full collection</p>
+        <div class="counts"><span class="count-ok" id="ok-ledger">0 recorded</span> / <span class="count-fail" id="fail-ledger">0 named</span></div>
+        <button class="btn btn-small" id="scan-ledger">Read ledger</button>
+        <ul class="fail-list" id="list-ledger"></ul>
+      </div>
+
+      <div class="card panel" id="panel-rt">
+        <div class="panel-head">
+          <h2>Game Version</h2>
+          <span class="badge badge-idle" id="badge-rt">IDLE</span>
+        </div>
+        <p class="panel-sub">SkyrimSE.exe FileVersion, first three numbers, plus the script extender loader</p>
+        <div class="counts"><span class="count-ok" id="ok-rt">—</span> / <span class="count-fail" id="fail-rt">0 problems</span></div>
+        <button class="btn btn-small" id="scan-rt">Read game version</button>
+        <ul class="fail-list" id="list-rt"></ul>
+      </div>
+
+      <div class="card panel" id="panel-rel">
+        <div class="panel-head">
+          <h2>Release Book</h2>
+          <span class="badge badge-idle" id="badge-rel">IDLE</span>
+        </div>
+        <p class="panel-sub">release-state and release-lock. A missing pair is normal.</p>
+        <div class="counts"><span class="count-ok" id="ok-rel">—</span> / <span class="count-fail" id="fail-rel">0 problems</span></div>
+        <button class="btn btn-small" id="scan-rel">Read release book</button>
+        <ul class="fail-list" id="list-rel"></ul>
+      </div>
+
+      <div class="card panel" id="panel-else">
+        <div class="panel-head">
+          <h2>Play Elsewhere</h2>
+          <span class="badge badge-idle" id="badge-else">IDLE</span>
+        </div>
+        <p class="panel-sub">skymp-disabled parks the client. Play will not reach the server.</p>
+        <div class="counts"><span class="count-ok" id="ok-else">—</span> / <span class="count-fail" id="fail-else">0 problems</span></div>
+        <button class="btn btn-small" id="scan-else">Read play-elsewhere</button>
+        <ul class="fail-list" id="list-else"></ul>
+      </div>
     </section>
   </main>
 

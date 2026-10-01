@@ -139,4 +139,68 @@ fn main() {
         }
         Err(e) => println!("  skipped: {e}"),
     }
+
+    println!("\n== quarantine / load order / ledger ==");
+    let plugins = daedric_core::plugin_set(&lock, &build);
+    let order_plugins = daedric_core::expected_load_order(&asar, &plugins);
+    let quarantine = daedric_core::read_quarantine(&root, &plugins);
+    println!(
+        "  quarantine: {} foreign / {} contract hits — {}",
+        quarantine.foreign, quarantine.contract_hits, quarantine.note
+    );
+    for batch in &quarantine.batches {
+        for file in &batch.files {
+            println!(
+                "    {} {}{}",
+                batch.at,
+                file.name,
+                if file.in_contract { " CONTRACT" } else { "" }
+            );
+        }
+    }
+    let order = daedric_core::read_load_order(&root, &asar, &order_plugins);
+    println!(
+        "  load order: found={} contract_ok={} failed={} — {}",
+        order.found, order.contract_ok, order.failed, order.note
+    );
+    for issue in order.issues.iter().take(20) {
+        println!("    {} {}", issue.kind, issue.name);
+    }
+    let mut names = std::collections::BTreeMap::new();
+    for pin in &lock.mods {
+        if let Some(id) = pin.mod_id {
+            if !pin.name.trim().is_empty() {
+                names.insert(id.to_string(), pin.name.clone());
+            }
+        }
+    }
+    let ledger = daedric_core::read_install_ledger(&root, &names);
+    println!(
+        "  ledger: recorded={} named={} — {}",
+        ledger.recorded, ledger.named, ledger.note
+    );
+
+    println!("\n== play blockers ==");
+    let runtime = daedric_core::read_runtime(&root, &lock.game_versions);
+    println!(
+        "  runtime: {} installed={:?} required={} loader={} failed={}",
+        runtime.verdict,
+        runtime.installed,
+        runtime.required,
+        runtime.loader_present,
+        runtime.failed
+    );
+    println!("    {}", runtime.note);
+    let release = daedric_core::read_release_book(&root);
+    println!(
+        "  release: {} servers={:?} failed={}",
+        release.verdict, release.servers, release.failed
+    );
+    println!("    {}", release.note);
+    let elsewhere = daedric_core::read_play_elsewhere(&root);
+    println!(
+        "  elsewhere: disabled={} parked={} failed={}",
+        elsewhere.disabled, elsewhere.parked, elsewhere.failed
+    );
+    println!("    {}", elsewhere.note);
 }

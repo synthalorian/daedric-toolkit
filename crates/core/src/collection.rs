@@ -69,6 +69,10 @@ pub struct CollectionLock {
     pub revision: Option<u64>,
     #[serde(default)]
     pub file_set_sha256: Option<String>,
+    /// Launcher-published game builds. Play itself compares the first three
+    /// numbers of SkyrimSE.exe against the hardcoded `1.6.1170`.
+    #[serde(default)]
+    pub game_versions: Vec<String>,
     #[serde(default)]
     pub mods: Vec<ModPin>,
     /// esp filename -> pin (same shape as manifest::FilePin)

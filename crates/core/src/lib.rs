@@ -9,15 +9,25 @@ pub mod asar;
 pub mod collection;
 mod de;
 pub mod extract;
+pub mod field;
 pub mod hash;
 pub mod manifest;
 pub mod overlay;
+pub mod play;
 pub mod scan;
 pub mod verify;
 
 pub use asar::Asar;
 pub use collection::{BuildManifest, CollectionLock, DllAllowlist};
+pub use field::{
+    expected_load_order, names_from_modlist, plugin_set, read_install_ledger, read_load_order,
+    read_quarantine, LedgerReport, LoadOrderReport, QuarantineReport,
+};
 pub use manifest::Manifest;
 pub use overlay::{check_overlay, read_installed_overlay, OverlayReport, OverlayVerdict};
+pub use play::{
+    read_pe_file_version, read_play_elsewhere, read_release_book, read_runtime, ElsewhereReport,
+    ReleaseReport, RuntimeReport,
+};
 pub use scan::{scan_install, FileVerdict, ScanReport};
 pub use verify::{scan_build_gate, verify_downloads, BuildGateReport, DownloadsReport};
