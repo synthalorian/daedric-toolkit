@@ -257,6 +257,15 @@
     renderIssues("else", report, report.disabled ? "parked" : "enabled");
   }
 
+  function renderHazards(report) {
+    var bits = [
+      (report.known_bad || []).length + " known-bad",
+      (report.foreign_plugins || []).length + " foreign",
+      (report.parked_folders || []).length + " parked",
+    ];
+    renderIssues("haz", report, bits.join(" · "));
+  }
+
   function renderLedger(report) {
     $("ok-ledger").textContent = report.recorded + " recorded";
     $("fail-ledger").textContent = report.named + " named";
@@ -338,7 +347,7 @@
 
   function setBusy(busy) {
     runBtn.disabled = busy;
-    ["scan-esp", "scan-gate", "scan-dl", "scan-quar", "scan-load", "scan-ledger", "scan-rt", "scan-rel", "scan-else"].forEach(function (id) {
+    ["scan-esp", "scan-gate", "scan-dl", "scan-quar", "scan-load", "scan-ledger", "scan-rt", "scan-rel", "scan-else", "scan-haz"].forEach(function (id) {
       $(id).disabled = busy;
     });
     runBtn.textContent = busy ? "CONSULTING THE GATE…" : "RUN FULL DOCTOR";
@@ -365,6 +374,7 @@
         renderRuntime(report.runtime);
         renderRelease(report.release);
         renderElsewhere(report.elsewhere);
+        renderHazards(report.hazards);
         var driftNote =
           report.overlay.verdict === "Drift"
             ? " (overlay drift — failures are version skew)"
@@ -377,7 +387,8 @@
           (report.load_order ? report.load_order.failed : 0) +
           (report.runtime ? report.runtime.failed : 0) +
           (report.release ? report.release.failed : 0) +
-          (report.elsewhere ? report.elsewhere.failed : 0);
+          (report.elsewhere ? report.elsewhere.failed : 0) +
+          (report.hazards ? report.hazards.failed : 0);
         setStatus(
           totalFail === 0
             ? "the gate holds. every contract passes." + driftNote
@@ -467,6 +478,12 @@
     runSingle("scan-else", "else", "read_play_elsewhere", {
       skyrimRoot: rootInput.value,
     }, renderElsewhere);
+  });
+
+  $("scan-haz").addEventListener("click", function () {
+    runSingle("scan-haz", "haz", "read_hazards", {
+      skyrimRoot: rootInput.value,
+    }, renderHazards);
   });
 
   // Decode the contract strip on load so the UI opens with context.

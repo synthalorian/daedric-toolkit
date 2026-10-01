@@ -1,9 +1,9 @@
 use daedric_core::{
-    expected_load_order, names_from_modlist, plugin_set, read_install_ledger, read_load_order,
-    read_play_elsewhere, read_quarantine, read_release_book, read_runtime, Asar, BuildGateReport,
-    BuildManifest, CollectionLock, DllAllowlist, DownloadsReport, ElsewhereReport, LedgerReport,
-    LoadOrderReport, Manifest, OverlayReport, QuarantineReport, ReleaseReport, RuntimeReport,
-    ScanReport,
+    expected_load_order, names_from_modlist, plugin_set, read_hazards, read_install_ledger,
+    read_load_order, read_play_elsewhere, read_quarantine, read_release_book, read_runtime, Asar,
+    BuildGateReport, BuildManifest, CollectionLock, DllAllowlist, DownloadsReport, ElsewhereReport,
+    HazardReport, LedgerReport, LoadOrderReport, Manifest, OverlayReport, QuarantineReport,
+    ReleaseReport, RuntimeReport, ScanReport,
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -171,6 +171,11 @@ fn read_play_elsewhere_cmd(skyrim_root: String) -> Result<ElsewhereReport, Strin
     Ok(read_play_elsewhere(&PathBuf::from(skyrim_root)))
 }
 
+#[tauri::command(rename = "read_hazards")]
+fn read_hazards_cmd(skyrim_root: String) -> Result<HazardReport, String> {
+    Ok(read_hazards(&PathBuf::from(skyrim_root)))
+}
+
 /// Everything the doctor reports in one run.
 #[derive(Debug, Clone, Serialize)]
 pub struct FullDoctorReport {
@@ -185,6 +190,7 @@ pub struct FullDoctorReport {
     pub runtime: RuntimeReport,
     pub release: ReleaseReport,
     pub elsewhere: ElsewhereReport,
+    pub hazards: HazardReport,
 }
 
 /// Full install-doctor sweep: decode contracts, scan the esp gate, the
@@ -230,6 +236,7 @@ fn run_full_doctor(skyrim_root: String, asar_path: String) -> Result<FullDoctorR
     let runtime = read_runtime(&root, &lock.game_versions);
     let release = read_release_book(&root);
     let elsewhere = read_play_elsewhere(&root);
+    let hazards = read_hazards(&root);
 
     Ok(FullDoctorReport {
         esp,
@@ -243,6 +250,7 @@ fn run_full_doctor(skyrim_root: String, asar_path: String) -> Result<FullDoctorR
         runtime,
         release,
         elsewhere,
+        hazards,
     })
 }
 
@@ -263,6 +271,7 @@ pub fn run() {
             read_runtime_cmd,
             read_release_book_cmd,
             read_play_elsewhere_cmd,
+            read_hazards_cmd,
             run_full_doctor,
         ])
         .run(tauri::generate_context!())

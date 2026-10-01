@@ -203,4 +203,16 @@ fn main() {
         elsewhere.disabled, elsewhere.parked, elsewhere.failed
     );
     println!("    {}", elsewhere.note);
+    let hazards = daedric_core::read_hazards(&root);
+    println!(
+        "  leftovers: known-bad={} foreign={} parked={} failed={}",
+        hazards.known_bad.len(),
+        hazards.foreign_plugins.len(),
+        hazards.parked_folders.len(),
+        hazards.failed
+    );
+    println!("    {}", hazards.note);
+    for issue in hazards.issues.iter().take(12) {
+        println!("    {} {}", issue.kind, issue.name);
+    }
 }

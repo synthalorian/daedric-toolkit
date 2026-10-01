@@ -11,6 +11,7 @@ mod de;
 pub mod extract;
 pub mod field;
 pub mod hash;
+pub mod hazards;
 pub mod manifest;
 pub mod overlay;
 pub mod play;
@@ -23,6 +24,7 @@ pub use field::{
     expected_load_order, names_from_modlist, plugin_set, read_install_ledger, read_load_order,
     read_quarantine, LedgerReport, LoadOrderReport, QuarantineReport,
 };
+pub use hazards::{read_hazards, HazardReport};
 pub use manifest::Manifest;
 pub use overlay::{check_overlay, read_installed_overlay, OverlayReport, OverlayVerdict};
 pub use play::{
